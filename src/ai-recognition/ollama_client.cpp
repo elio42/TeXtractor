@@ -109,11 +109,6 @@ std::string OllamaClient::textract(const std::string &file_path){
     try{
         std::string base64_image = getBase64Image(file_path);
         std::string request_body = buildRequestBody(base64_image);
-        
-        std::ofstream debug_file("debug_base64.txt");
-        debug_file << request_body;
-        debug_file.close();
-
         return sendRequest(request_body);
     }
     catch(const std::exception& e){
