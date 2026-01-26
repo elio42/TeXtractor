@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
 #include <../core/settings.h>
+#include "ai_client.h"
 
-class OllamaClient{
+class OllamaClient : public AiClient {
 private:
     std::string ip;
     int port;
@@ -12,10 +13,6 @@ private:
     std::string buildRequestBody(const std::string &base64_image);
 
     std::string sendRequest(const std::string &body);
-
-    std::string getBase64Image(const std::string &file_path);
-
-    static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
 
 public:
     OllamaClient(Settings &settings);

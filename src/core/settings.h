@@ -35,4 +35,10 @@ public:
     std::string getOllamaModel();
     void setOllamaKeepAlive(int keep_alive);
     int getOllamaKeepAlive();
+
+    //Settings relevant when using Gemini:
+    void setGeminiApiKey(const std::string &api_key);
+    std::string getGeminiApiKey();
+    void setGeminiApiUrl(const std::string &api_url);
+    std::string getGeminiApiUrl(); //TODO: Make sure there is a default
 };

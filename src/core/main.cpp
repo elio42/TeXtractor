@@ -2,7 +2,8 @@
 #include<filesystem>
 #include<../include/argparse.hpp>
 #include<../ocr/ocr.h>
-#include<../ocr/ollama_client.h>
+#include<../ai-recognition/gemini_client.h>
+#include<../ai-recognition/ollama_client.h>
 #include "settings.h"
 
 int main(int argc, char *argv[]){
@@ -33,9 +34,22 @@ int main(int argc, char *argv[]){
         .help("Set the Ollama model to use")
         .nargs(1);
 
+    //! Must change the API key storage to use the system keychain in the future.
+    program.add_argument("--set-gemini-api-key")
+        .help("Set the Gemini API key to use")
+        .nargs(1);
+    
+    program.add_argument("--set-gemini-api-url")
+        .help("Set the Gemini API URL to use")
+        .nargs(1);
+
     //! Temporary
     program.add_argument("--use-ollama")
         .help("Use Ollama for text processing")
+        .flag();
+
+    program.add_argument("--use-gemini")
+        .help("Use Gemini for text processing")
         .flag();
     
     try {
@@ -62,6 +76,14 @@ int main(int argc, char *argv[]){
         }
         if (program.is_used("--set-ollama-model")){
             settings.setOllamaModel(program.get<std::string>("--set-ollama-model"));
+            settings.saveSettings();
+        }
+        if (program.is_used("--set-gemini-api-key")){
+            settings.setGeminiApiKey(program.get<std::string>("--set-gemini-api-key"));
+            settings.saveSettings();
+        }
+        if (program.is_used("--set-gemini-api-url")){
+            settings.setGeminiApiUrl(program.get<std::string>("--set-gemini-api-url"));
             settings.saveSettings();
         }
         if (program.get<bool>("--settings")){
@@ -93,6 +115,14 @@ int main(int argc, char *argv[]){
         outText = ollama.textract(image_path);
         std::cout << "\nOllama response:\n\n" << outText << "\n";
     }
+
+    if (program.get<bool>("--use-gemini")){
+        Settings settings;
+        GeminiClient gemini(settings);
+        outText = gemini.textract(image_path);
+        std::cout << "\nGemini response:\n\n" << outText << "\n";
+    }
+    
 
     return 0;
 }

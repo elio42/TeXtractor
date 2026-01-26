@@ -16,33 +16,6 @@ OllamaClient::OllamaClient(Settings &settings){
     this->keep_alive = settings.getOllamaKeepAlive();
 }
 
-size_t OllamaClient::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp){
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
-    return size * nmemb;
-}
-
-std::string OllamaClient::getBase64Image(const std::string &file_path){
-    std::ifstream imageFile(file_path, std::ios::binary);
-    if (!imageFile){
-        throw std::runtime_error("Could not open image file: " + file_path);
-    }
-
-    // Get file size
-    imageFile.seekg(0, std::ios::end);
-    std::streamsize fileSize = imageFile.tellg();
-    imageFile.seekg(0, std::ios::beg);
-
-    // Resize buffer and read
-    std::string imageBuffer;
-    imageBuffer.resize(fileSize);
-    imageFile.read(&imageBuffer[0], fileSize);
-
-    // Encode to Base64
-    std::string base64String = base64_encode(imageBuffer);
-
-    return base64String;
-}
-
 std::string OllamaClient::buildRequestBody(const std::string &base64_image){
     json request;
     request["model"] = this->model;
@@ -51,9 +24,8 @@ std::string OllamaClient::buildRequestBody(const std::string &base64_image){
 
     json message;
     message["role"] = "user";
-    message["content"] = "hey";
-    message["content"] = Prompts::default_prompt; //TODO: pass a value for this.
     message["images"] = { base64_image };
+    message["content"] = Prompts::default_prompt; //TODO: pass a value for this.
 
     request["messages"] = { message };
 

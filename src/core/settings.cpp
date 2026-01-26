@@ -104,3 +104,20 @@ void Settings::setOllamaKeepAlive(int keep_alive){
 int Settings::getOllamaKeepAlive(){
     return config["keep_alive"].get<int>();
 }
+
+//Settings relevant when using Gemini:
+void Settings::setGeminiApiKey(const std::string &api_key){
+    config["gemini_api_key"] = api_key;
+}
+
+std::string Settings::getGeminiApiKey(){
+    return config["gemini_api_key"].get<std::string>();
+}
+
+void Settings::setGeminiApiUrl(const std::string &api_url){
+    config["gemini_api_url"] = api_url;
+}
+
+std::string Settings::getGeminiApiUrl(){
+    return config["gemini_api_url"].get<std::string>();
+}
