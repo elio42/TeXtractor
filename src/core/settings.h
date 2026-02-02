@@ -9,24 +9,34 @@ private:
     const std::string home = std::getenv("HOME");
     const std::string config_folder_path = home + "/.config/textractor";
     const std::string config_file_path = config_folder_path + "/config.json";
+    
+    //Default settings values:
+    const std::string ocr_default_language = "eng";
+    const std::string ollama_default_ip = "127.0.0.1";
+    const int ollama_default_port = 11434;
+    const std::string ollama_default_model = "gemma3:12b";
+    const int ollama_default_keep_alive = 0;
+    const std::string gemini_default_api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
+
+    //Internal Methods:
+    void setDefaults();
 
 public:
-    Settings();
+    Settings(const bool load_defaults = true);
 
     //General Methods:
     bool hasSettings();
     std::string getSettingsAsString();
-    void removeSettings();
+    void removeAllSettings();
     void updateSettings();
     void saveSettings();
+    void removeGivenSetting(const std::string &key);
 
     //Settings always relevant:
     void setOcrLanguage(const std::string &lang);
     std::string getOCRLanguage();
 
     //Settings relevant when using Ollama:
-    void setOllamaDefaults();
-    void removeOllamaSettings();
     void setOllamaIP(const std::string &ip);
     std::string getOllamaIP();
     void setOllamaPort(int port);
@@ -40,5 +50,5 @@ public:
     void setGeminiApiKey(const std::string &api_key);
     std::string getGeminiApiKey();
     void setGeminiApiUrl(const std::string &api_url);
-    std::string getGeminiApiUrl(); //TODO: Make sure there is a default
+    std::string getGeminiApiUrl();
 };

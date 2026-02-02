@@ -13,6 +13,8 @@ private:
 
     std::string sendRequest(const std::string &body);
 
+    std::string parseResponse(const std::string &response);
+
 public:
     GeminiClient(Settings &settings);
 

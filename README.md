@@ -1,48 +1,75 @@
+unfinished README draft:
+
 # TeXtractor
 
-## Notes from testing; to be removed:
+TeXtractor is a Linux desktop application to extract **any** text from an image. TeXtractor uses both traditional OCR and multi modal AI models for text and LaTeX formula extraction. You can use both online models and local models with ollama.
 
-curl -fsSL https://ollama.com/install.sh | sh
+On the surface, TeXtractor is an application that can be opened with an image and it will extract the text for you. The real intention however, is for TeXtractor to be used with your screenshot tool. Some screenshot applications like KDE Spectacle have an `export` button that you can use to open TeXtractor with the just taken screenshot.
 
-ollama run qwen3-vl (check how to install detached.)
+## Usage
 
+write something...
 
+### Model selection
 
-$$a_0 = f(0) = \sum_{j=0}^{\infty} y_j \prod_{m=0}^{\infty} \frac{x_m - x_j}{x_m - x_j}$$
+Any multimodel AI model can be used. Here is a selection of model that I tested and the results I got:
 
+#### Google Gemini
 
-\[ a_0 = f(0) = \sum_{j=0}^{k-1} y_j \prod_{\substack{m=0 \\ m \neq j}}^{k-1} \frac{x_m}{x_m - x_j} \]
+Pro:
+- This performs by far the best and the fastest.
+- Google offers a generous free-tier for their API.
+  - (Rate limits of 5 requests/minute but no monthly limits.) (January 2026)
 
-$$a_0 = f(0) = \sum_{j=0}^{\infty} y_j \prod_{m=0}^{\infty} \frac{x_m - x_j}{x_m - x_0}$$
+Cons:
+- Google uses your images for training.
 
-$$a_0 = \sum_{j=0}^{k-1} \prod_{m=0, m \neq j}^{k-1} \frac{x_m}{x_m - x_j}$$
+#### qwen3-vl:8b (Ollama)
 
-$$a_0 = \sum_{j=0}^{k-1} \prod_{m=0, m \neq j}^{k-1} \frac{x_m}{x_m - x_j}$$
+Pro:
+- Performs the best from the local models tested.
+  - Extracts even complext LaTeX formulas with less common operators correctly.
+  - Rivals Google Gemini in accuracy
+- Uses only ~6Gb of VRAM/RAM so it will fit most GPU's
 
+Cons:
+- Ungodly slow.
+- Sometimes doesn't even manage to finish with large images. (I let is run for over 20 min for some of the larger test images...)
 
+#### gemma3:12b (Ollama) (8.1 Gb)
 
-Using $\LaTeX$ will enhance both, the look of your papers and your productivity.
+Pro:
+- Text extraction works quite well including formatting.
+- Order of magnitude faster than Qwen3.
 
+Cons:
+- Struggles with complex LaTeX formulas
+  - Repeatedly misclassified more complex operators like substacks.
 
+With a size of just over 8Gb it will fit most Laptops with unified memory but it might not fit into the VRAM of most dedicated GPU's (Many of which still have 8Gb).
 
-$$a_0 = f(0) = \sum_{j=0}^{k-1} y_j \prod_{\substack{m=0 \\ m \neq j}}^{k-1} \frac{x_m}{x_m - x_j}$$
+#### gemma3:4b (Ollama) (3.3 Gb)
 
-$$a_0 = f(0) = \sum_{j=0}^{k-1} y_j \prod_{\substack{m=0 \\ m \neq j}}^{k-1} \frac{x_m}{x_m - x_j}$$
+Pros:
+- Very fast
+- Fits into just 3Gb of VRAM/RAM
 
+Cons:
+- Usually not much better than traditional OCR so quite useless.
 
+#### Table comparing the time to answer for different machines
 
-# Discover the beauty
-# of $L^A T_E X$.
+- XPS15 9500 (2020): i7-10750H, GTX 1650 Ti mobile
+- Asus Zenbook (____): 
+- Pc: I7 _____, Radeon RX 9070 XT
 
-### Prettify your research papers.
+Time \ System | Pc | XPS15 | Zenbook
+-|-|-|-
+Gemini | 15s | 15s | 15s
+qwen3-vl:8b
+gemma3:4b
+gemma3:12b
 
-**READ THE TUTORIAL**
+## Building and Install
 
-### How to get started?
-With our tutorials, you will learn how to use LaTeX in no time. Step by step lessons help you to create a document fast and simple. No need to download or install an editor, you can follow most tutorials right away in your browser.
-
-### What is this?
-LaTeX is a markup language to typeset documents. It excels at making math and the overall layout beautiful. Learn how to create top-notch academic papers. Explore all features with hands-on tutorials and code examples. For free.
-
-### Why learn it?
-With LaTeX, you do the formatting _once_ and then focus on your content. This guide shows you, that nice typesetting is easy and hassle free. Using LaTeX will enhance both, the look of your papers and your productivity.
+write something one day...

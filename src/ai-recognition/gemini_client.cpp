@@ -25,7 +25,7 @@ std::string GeminiClient::buildRequestBody(const std::string &file_path){
     part_image["inline_data"] = inline_data;
 
     json part_text;
-    part_text["text"] = Prompts::gemeini_prompt; //TODO: pass a value for this.
+    part_text["text"] = Prompts::default_complex_prompt; //TODO: pass a value for this.
 
     json contents;
     contents["parts"] = { part_image, part_text };
@@ -82,10 +82,22 @@ std::string GeminiClient::sendRequest(const std::string &body){
     return response_data;
 }
 
+std::string GeminiClient::parseResponse(const std::string &response){
+    auto json_response = json::parse(response);
+    if (json_response.contains("error")) {
+        throw std::runtime_error("Gemini API Error: " + json_response["error"].get<std::string>());
+    } else {
+        // Assuming the response structure contains the extracted text in a specific field
+        return json_response["candidates"][0]["content"]["parts"][0]["text"].get<std::string>();
+    }
+    
+}
+
 std::string GeminiClient::textract(const std::string &file_path){
     try{
         std::string request_body = buildRequestBody(file_path);
-        return sendRequest(request_body);
+        std::string response = sendRequest(request_body);
+        return parseResponse(response);
     }
     catch(const std::exception& e){
         return "Could not perform text extraction with Gemini. The error was: " + std::string(e.what());

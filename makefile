@@ -1,8 +1,9 @@
 CXX = g++
-CXXFLAGS = -g -Isrc/include -Wall $(shell pkg-config --cflags tesseract lept)
+CXXFLAGS = -g -Isrc/include -Wall -MMD -MP $(shell pkg-config --cflags tesseract lept)
 LDFLAGS = $(shell pkg-config --libs tesseract lept)
 SOURCES = $(shell find src/ -name '*.cpp')
 OBJECTS = $(SOURCES:.cpp=.o)
+DEPS = $(OBJECTS:.o=.d)
 TARGET = TeXtractor
 
 # Compile each .cpp file into a .o file
@@ -13,10 +14,11 @@ TARGET = TeXtractor
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
+-include $(DEPS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean target to remove the executable
 clean:
-	rm -f $(TARGET) $(OBJECTS)
+	rm -f $(TARGET) $(OBJECTS) $(DEPS)

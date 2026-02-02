@@ -1,12 +1,14 @@
 #include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
+#include "../core/settings.h"
 
 std::string getOCR(std::string &path){
     char *outText;
+    Settings settings;
 
     tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
     // Initialize tesseract-ocr with English, without specifying tessdata path
-    if (api->Init(NULL, "eng")) {
+    if (api->Init(NULL, settings.getOCRLanguage().c_str())) {
         fprintf(stderr, "Could not initialize tesseract.\n");
         exit(1);
     }
