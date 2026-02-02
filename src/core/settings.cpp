@@ -12,16 +12,11 @@ Settings::Settings(const bool load_defaults){
     if (hasSettings()){
         std::ifstream config_file(config_file_path);
         config_file >> config;
-        this->setDefaults();
         //TODO: test broken json
-    } else if (load_defaults) {
+    }
+    if (load_defaults) {
         //Set default settings for app to use when no value is set yet.
-        std::cout << "No existing settings found. Setting default configuration values.\n";
         this->setDefaults();
-    } else {
-        //Empty config when load_defaults is false and no settings file exists.
-        std::cout << "No existing settings found. Starting with an empty configuration.\n";
-        config = json::object();
     }
 }
 

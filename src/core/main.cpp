@@ -129,8 +129,6 @@ int main(int argc, char *argv[]){
                 std::cout << "Could not retrieve Ollama models. The error was: " << e.what() << "\n";
             }
         }
-        
-        std::cout << "\nIf you changed any settings, they have been saved successfully.\n\n";
     }
 
     std::string image_path = program.get<std::string>("image_path");
