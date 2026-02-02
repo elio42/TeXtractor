@@ -39,3 +39,6 @@
 
 # debug information files
 *.dwo
+
+# My own executable:
+TeXtractor
