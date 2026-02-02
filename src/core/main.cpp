@@ -8,7 +8,7 @@
 #include "open_terminal.h"
 
 int main(int argc, char *argv[]){
-    argparse::ArgumentParser program("TeXtractor OCR Module", "0.0.1");
+    argparse::ArgumentParser program("TeXtractor OCR Module", "0.0.2");
     
     program.add_argument("image_path")
         .help("Path to the image file to be processed")
