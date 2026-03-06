@@ -2,7 +2,7 @@
 #include<iostream>
 #include<filesystem>
 #include<fstream>
-#include<../include/json.hpp>
+#include "../include/json.hpp"
 
 using json = nlohmann::json;
 
@@ -24,10 +24,12 @@ Settings::Settings(const bool load_defaults){
 
 void Settings::setDefaults() {
     if (!config.contains("ocr_language")) config["ocr_language"] = this->ocr_default_language;
+    if (!config.contains("default_ai_provider")) config["default_ai_provider"] = this->default_ai_provider;
     if (!config.contains("ollama_ip")) config["ollama_ip"] = this->ollama_default_ip;
     if (!config.contains("ollama_port")) config["ollama_port"] = this->ollama_default_port;
     if (!config.contains("ollama_model")) config["ollama_model"] = this->ollama_default_model;
     if (!config.contains("ollama_keep_alive")) config["ollama_keep_alive"] = this->ollama_default_keep_alive;
+    if (!config.contains("gemini_api_key")) config["gemini_api_key"] = "";
     if (!config.contains("gemini_api_url")) config["gemini_api_url"] = this->gemini_default_api_url;
 }
 
@@ -75,6 +77,14 @@ void Settings::setOcrLanguage(const std::string &lang){
 
 std::string Settings::getOCRLanguage(){
     return config["ocr_language"].get<std::string>();
+}
+
+void Settings::setDefaultAiProvider(const std::string &provider){
+    config["default_ai_provider"] = provider;
+}
+
+std::string Settings::getDefaultAiProvider(){
+    return config["default_ai_provider"].get<std::string>();
 }
 
 // OLLAMA Settings: (ip, port, model, keep_alive)

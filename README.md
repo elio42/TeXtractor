@@ -8,7 +8,18 @@ On the surface, TeXtractor is an application that can be opened with an image an
 
 ## Usage
 
-write something...
+TeXtractor now starts as a GUI application.
+
+- Launch without arguments to open the Home page with settings.
+- Launch with an image path argument to immediately run OCR on that image.
+- In the Results view, use the provider dropdown and `Extract with AI` button to run AI extraction.
+
+Examples:
+
+```bash
+./build/TeXtractor
+./build/TeXtractor /path/to/image.png
+```
 
 ### Model selection
 
@@ -72,4 +83,23 @@ gemma3:12b
 
 ## Building and Install
 
-write something one day...
+Build dependencies (Linux):
+
+- C++ compiler with C++17 support
+- CMake 3.16+
+- Qt6 Widgets + Concurrent
+- Tesseract + Leptonica development libraries
+- libcurl development library
+
+Build:
+
+```bash
+cmake -S . -B build
+cmake --build build -j
+```
+
+Run:
+
+```bash
+./build/TeXtractor
+```

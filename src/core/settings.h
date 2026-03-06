@@ -1,5 +1,8 @@
 #pragma once
-#include<../include/json.hpp>
+#include <cstdlib>
+#include <string>
+
+#include "../include/json.hpp"
 
 using json = nlohmann::json;
 
@@ -17,6 +20,7 @@ private:
     const std::string ollama_default_model = "gemma3:12b";
     const int ollama_default_keep_alive = 0;
     const std::string gemini_default_api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
+    const std::string default_ai_provider = "ollama";
 
     //Internal Methods:
     void setDefaults();
@@ -35,6 +39,8 @@ public:
     //Settings always relevant:
     void setOcrLanguage(const std::string &lang);
     std::string getOCRLanguage();
+    void setDefaultAiProvider(const std::string &provider);
+    std::string getDefaultAiProvider();
 
     //Settings relevant when using Ollama:
     void setOllamaIP(const std::string &ip);

@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <curl/curl.h>
 #include "gemini_client.h"
-#include <../include/json.hpp>
+#include "../include/json.hpp"
 #include "../core/prompts.h"
 #include "../include/base64.h"
 
