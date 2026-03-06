@@ -38,7 +38,7 @@ std::string AiClient::findImageMimeType(const std::string &file_path){
     } else if (transform(extension.begin(), extension.end(), extension.begin(), ::tolower), extension == ".jpeg") {
         return "image/jpeg";
     } else if (transform(extension.begin(), extension.end(), extension.begin(), ::tolower), extension == ".jpg") {
-        return "image/jpg";
+        return "image/jpeg";
     } else {
         throw std::runtime_error("Unsupported image format: " + extension);
     }

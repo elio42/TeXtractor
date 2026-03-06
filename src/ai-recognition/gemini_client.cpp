@@ -85,7 +85,11 @@ std::string GeminiClient::sendRequest(const std::string &body){
 std::string GeminiClient::parseResponse(const std::string &response){
     auto json_response = json::parse(response);
     if (json_response.contains("error")) {
-        throw std::runtime_error("Gemini API Error: " + json_response["error"].get<std::string>());
+        // Error is an object, so we need to access the message field or dump the whole object
+        std::string error_msg = json_response["error"].contains("message") 
+            ? json_response["error"]["message"].get<std::string>()
+            : json_response["error"].dump();
+        throw std::runtime_error("Gemini API Error: " + error_msg);
     } else {
         // Assuming the response structure contains the extracted text in a specific field
         return json_response["candidates"][0]["content"]["parts"][0]["text"].get<std::string>();
