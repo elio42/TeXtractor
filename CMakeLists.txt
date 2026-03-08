@@ -4,6 +4,7 @@ project(TeXtractor VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(TESSERACT REQUIRED tesseract)
@@ -14,6 +15,9 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Concurrent)
 set(TEXTRACTOR_SOURCES
     src/core/main.cpp
     src/gui/main_window.cpp
+    src/gui/main_pages/home_page.cpp
+    src/gui/main_pages/result_page.cpp
+    src/gui/main_pages/settings_page.cpp
     src/core/settings.cpp
     src/core/open_terminal.cpp
     src/ocr/ocr.cpp
