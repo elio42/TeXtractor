@@ -9,6 +9,7 @@
 - installation and setup for ollama and gemeni.
 
 
+
 Prettier???
 
 # TeXtractor
