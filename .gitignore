@@ -43,3 +43,4 @@
 # Own stuff:
 TeXtractor
 build/
+.vscode/*
