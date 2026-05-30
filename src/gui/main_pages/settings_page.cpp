@@ -9,8 +9,23 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 
+namespace {
+void addProviderActions(QFormLayout *form, QWidget *parent, QPushButton *&setupButton, QPushButton *&resetButton) {
+    auto *actionsWidget = new QWidget(parent);
+    auto *actionsLayout = new QHBoxLayout(actionsWidget);
+    actionsLayout->setContentsMargins(0, 0, 0, 0);
+    actionsLayout->addStretch(1);
+    setupButton = new QPushButton("Setup", actionsWidget);
+    resetButton = new QPushButton("Reset setup", actionsWidget);
+    actionsLayout->addWidget(setupButton);
+    actionsLayout->addWidget(resetButton);
+    form->addRow("", actionsWidget);
+}
+}
+
 SettingsPage::SettingsPage(Settings &settings, QWidget *parent)
-    : QWidget(parent), settings(settings), ocrLanguageDropdown(nullptr), ocrLanguageCustomInput(nullptr),
+        : QWidget(parent), settings(settings), ocrBox(nullptr), aiBox(nullptr), geminiBox(nullptr), ollamaBox(nullptr),
+            ocrLanguageDropdown(nullptr), ocrLanguageCustomInput(nullptr),
       defaultProviderInput(nullptr), geminiApiKeyInput(nullptr), geminiApiUrlInput(nullptr),
       ollamaIpInput(nullptr), ollamaPortInput(nullptr), ollamaModelInput(nullptr),
       ollamaKeepAliveInput(nullptr) {
@@ -50,7 +65,7 @@ void SettingsPage::buildUi() {
     contentLayout->setContentsMargins(0, 0, 0, 0);
 
     // OCR Settings
-    auto *ocrBox = new QGroupBox("OCR Settings", contentContainer);
+    ocrBox = new QGroupBox("OCR Settings", contentContainer);
     auto *ocrForm = new QFormLayout(ocrBox);
 
     ocrLanguageDropdown = new QComboBox(ocrBox);
@@ -92,18 +107,16 @@ void SettingsPage::buildUi() {
     contentLayout->addWidget(ocrBox);
 
     // AI Provider Settings
-    auto *aiBox = new QGroupBox("AI Provider Settings", contentContainer);
+    aiBox = new QGroupBox("AI Provider Settings", contentContainer);
     auto *aiForm = new QFormLayout(aiBox);
 
     defaultProviderInput = new QComboBox(aiBox);
-    defaultProviderInput->addItem("Ollama", "ollama");
-    defaultProviderInput->addItem("Gemini", "gemini");
     aiForm->addRow("Default Provider:", defaultProviderInput);
 
     contentLayout->addWidget(aiBox);
 
     // Gemini Settings
-    auto *geminiBox = new QGroupBox("Gemini Settings", contentContainer);
+    geminiBox = new QGroupBox("Gemini Settings", contentContainer);
     auto *geminiForm = new QFormLayout(geminiBox);
 
     geminiApiKeyInput = new QLineEdit(geminiBox);
@@ -113,10 +126,12 @@ void SettingsPage::buildUi() {
     geminiForm->addRow("API Key:", geminiApiKeyInput);
     geminiForm->addRow("API URL:", geminiApiUrlInput);
 
+    addProviderActions(geminiForm, geminiBox, setupGeminiButton, resetGeminiButton);
+
     contentLayout->addWidget(geminiBox);
 
     // Ollama Settings
-    auto *ollamaBox = new QGroupBox("Ollama Settings", contentContainer);
+    ollamaBox = new QGroupBox("Ollama Settings", contentContainer);
     auto *ollamaForm = new QFormLayout(ollamaBox);
 
     ollamaIpInput = new QLineEdit(ollamaBox);
@@ -130,6 +145,8 @@ void SettingsPage::buildUi() {
     ollamaForm->addRow("Port:", ollamaPortInput);
     ollamaForm->addRow("Model:", ollamaModelInput);
     ollamaForm->addRow("Keep Alive (seconds):", ollamaKeepAliveInput);
+
+    addProviderActions(ollamaForm, ollamaBox, setupOllamaButton, resetOllamaButton);
 
     contentLayout->addWidget(ollamaBox);
 
@@ -159,14 +176,105 @@ void SettingsPage::buildUi() {
         QMessageBox::information(this, "Settings", "Settings saved successfully.");
     });
 
+    // Setup/Reset button handlers
+    connect(setupGeminiButton, &QPushButton::clicked, this, [this]() {
+        emit geminiSetupRequested();
+    });
+
+    connect(resetGeminiButton, &QPushButton::clicked, this, [this]() {
+        auto reply = QMessageBox::question(this, "Reset Gemini", "Reset Gemini configuration?", QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
+            settings.resetAllGeminiSettings();
+            settings.saveSettings();
+            emit settingsChanged();
+            loadSettings();
+        }
+    });
+
+    connect(setupOllamaButton, &QPushButton::clicked, this, [this]() {
+        emit ollamaSetupRequested();
+    });
+
+    connect(resetOllamaButton, &QPushButton::clicked, this, [this]() {
+        auto reply = QMessageBox::question(this, "Reset Ollama", "Reset Ollama configuration?", QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
+            settings.resetAllOllamaSettings();
+            settings.saveSettings();
+            emit settingsChanged();
+            loadSettings();
+        }
+    });
+
     // Show/hide custom language input based on dropdown selection
     connect(ocrLanguageDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this]() {
         bool isOther = ocrLanguageDropdown->currentData().toString() == "other";
         ocrLanguageCustomInput->setVisible(isOther);
     });
+
+    updateProviderVisibility();
+    rebuildDefaultProviderOptions();
+}
+
+void SettingsPage::updateProviderVisibility() {
+    const bool ollamaConfigured = settings.getOllamaConfigured();
+    const bool geminiConfigured = settings.getGeminiConfigured();
+    const bool anyProviderConfigured = settings.getAnyProviderConfigured();
+
+    aiBox->setVisible(anyProviderConfigured);
+
+    // Always show provider boxes so users can setup providers from here.
+    ollamaBox->setVisible(true);
+    geminiBox->setVisible(true);
+
+    // Enable/disable provider-specific inputs based on configuration
+    geminiApiKeyInput->setEnabled(geminiConfigured);
+    geminiApiUrlInput->setEnabled(geminiConfigured);
+
+    ollamaIpInput->setEnabled(ollamaConfigured);
+    ollamaPortInput->setEnabled(ollamaConfigured);
+    ollamaModelInput->setEnabled(ollamaConfigured);
+    ollamaKeepAliveInput->setEnabled(ollamaConfigured);
+
+    // Show appropriate action buttons
+    if (setupGeminiButton && resetGeminiButton) {
+        setupGeminiButton->setVisible(!geminiConfigured);
+        resetGeminiButton->setVisible(geminiConfigured);
+    }
+    if (setupOllamaButton && resetOllamaButton) {
+        setupOllamaButton->setVisible(!ollamaConfigured);
+        resetOllamaButton->setVisible(ollamaConfigured);
+    }
+}
+
+void SettingsPage::rebuildDefaultProviderOptions() {
+    const QString currentProvider = defaultProviderInput->currentData().toString();
+
+    defaultProviderInput->clear();
+    if (settings.getOllamaConfigured()) {
+        defaultProviderInput->addItem("Ollama", "ollama");
+    }
+    if (settings.getGeminiConfigured()) {
+        defaultProviderInput->addItem("Gemini", "gemini");
+    }
+
+    if (defaultProviderInput->count() == 0) {
+        return;
+    }
+
+    QString defaultProvider = QString::fromStdString(settings.getDefaultAiProvider());
+    int index = defaultProviderInput->findData(defaultProvider);
+    if (index < 0 && !currentProvider.isEmpty()) {
+        index = defaultProviderInput->findData(currentProvider);
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    defaultProviderInput->setCurrentIndex(index);
 }
 
 void SettingsPage::loadSettings() {
+    updateProviderVisibility();
+
     QString currentLang = QString::fromStdString(settings.getOCRLanguage());
     int langIndex = ocrLanguageDropdown->findData(currentLang);
     if (langIndex >= 0) {
@@ -181,18 +289,19 @@ void SettingsPage::loadSettings() {
         ocrLanguageCustomInput->setText(currentLang);
     }
 
-    geminiApiKeyInput->setText(QString::fromStdString(settings.getGeminiApiKey()));
-    geminiApiUrlInput->setText(QString::fromStdString(settings.getGeminiApiUrl()));
-    ollamaIpInput->setText(QString::fromStdString(settings.getOllamaIP()));
-    ollamaPortInput->setValue(settings.getOllamaPort());
-    ollamaModelInput->setText(QString::fromStdString(settings.getOllamaModel()));
-    ollamaKeepAliveInput->setValue(settings.getOllamaKeepAlive());
-
-    QString defaultProvider = QString::fromStdString(settings.getDefaultAiProvider());
-    int index = defaultProviderInput->findData(defaultProvider);
-    if (index >= 0) {
-        defaultProviderInput->setCurrentIndex(index);
+    if (settings.getOllamaConfigured()) {
+        ollamaIpInput->setText(QString::fromStdString(settings.getOllamaIP()));
+        ollamaPortInput->setValue(settings.getOllamaPort());
+        ollamaModelInput->setText(QString::fromStdString(settings.getOllamaModel()));
+        ollamaKeepAliveInput->setValue(settings.getOllamaKeepAlive());
     }
+
+    if (settings.getGeminiConfigured()) {
+        geminiApiKeyInput->setText(QString::fromStdString(settings.getGeminiApiKey()));
+        geminiApiUrlInput->setText(QString::fromStdString(settings.getGeminiApiUrl()));
+    }
+
+    rebuildDefaultProviderOptions();
 }
 
 void SettingsPage::saveSettings() {
@@ -204,12 +313,21 @@ void SettingsPage::saveSettings() {
     }
     settings.setOcrLanguage(langCode.toStdString());
 
-    settings.setGeminiApiKey(geminiApiKeyInput->text().toStdString());
-    settings.setGeminiApiUrl(geminiApiUrlInput->text().trimmed().toStdString());
-    settings.setOllamaIP(ollamaIpInput->text().trimmed().toStdString());
-    settings.setOllamaPort(ollamaPortInput->value());
-    settings.setOllamaModel(ollamaModelInput->text().trimmed().toStdString());
-    settings.setOllamaKeepAlive(ollamaKeepAliveInput->value());
-    settings.setDefaultAiProvider(defaultProviderInput->currentData().toString().toStdString());
+    if (settings.getOllamaConfigured()) {
+        settings.setOllamaIP(ollamaIpInput->text().trimmed().toStdString());
+        settings.setOllamaPort(ollamaPortInput->value());
+        settings.setOllamaModel(ollamaModelInput->text().trimmed().toStdString());
+        settings.setOllamaKeepAlive(ollamaKeepAliveInput->value());
+    }
+
+    if (settings.getGeminiConfigured()) {
+        settings.setGeminiApiKey(geminiApiKeyInput->text().trimmed().toStdString());
+        settings.setGeminiApiUrl(geminiApiUrlInput->text().trimmed().toStdString());
+    }
+
+    if (settings.getAnyProviderConfigured() && defaultProviderInput->count() > 0) {
+        settings.setDefaultAiProvider(defaultProviderInput->currentData().toString().toStdString());
+    }
+
     settings.saveSettings();
 }

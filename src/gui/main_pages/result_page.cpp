@@ -13,8 +13,10 @@
 #include "../../ocr/ocr.h"
 
 ResultPage::ResultPage(Settings &settings, QWidget *parent)
-    : QWidget(parent), settings(settings), currentImageLabel(nullptr), ocrOutput(nullptr),
-      providerDropdown(nullptr), aiOutput(nullptr), statusLabel(nullptr) {
+    : QWidget(parent), settings(settings), currentImageLabel(nullptr), ocrOutput(nullptr), aiControlsStack(nullptr),
+        configuredAiControls(nullptr), setupAiControls(nullptr), providerDropdown(nullptr), extractAiButton(nullptr),
+        setupOllamaButton(nullptr), setupGeminiButton(nullptr), aiOutput(nullptr), statusLabel(nullptr),
+        settingsButton(nullptr) {
     buildUi();
 
     connect(&ocrWatcher, &QFutureWatcher<QString>::finished, this, [this]() {
@@ -26,6 +28,13 @@ ResultPage::ResultPage(Settings &settings, QWidget *parent)
         aiOutput->setPlainText(aiWatcher.result());
         statusLabel->setText("AI extraction completed.");
     });
+
+    refreshAiSection();
+}
+
+void ResultPage::refreshAiSection() {
+    rebuildProviderDropdown();
+    updateAiSectionVisibility();
 }
 
 void ResultPage::buildUi() {
@@ -36,7 +45,7 @@ void ResultPage::buildUi() {
     auto *backButton = new QPushButton("⌂ Home", this);
     currentImageLabel = new QLabel("Image: (none)", this);
 
-    auto *settingsButton = new QToolButton(this);
+    settingsButton = new QToolButton(this);
     settingsButton->setText("⚙");
     settingsButton->setStyleSheet(
         "QToolButton { font-size: 20px; border: none; }"
@@ -61,38 +70,48 @@ void ResultPage::buildUi() {
     layout->addWidget(ocrOutput, 1);
 
     // AI controls
-    auto *aiControls = new QHBoxLayout();
-    providerDropdown = new QComboBox(this);
-    providerDropdown->addItem("Ollama", "ollama");
-    providerDropdown->addItem("Gemini", "gemini");
+    aiControlsStack = new QStackedWidget(this);
 
-    auto *extractAiButton = new QPushButton("Extract with AI", this);
-    aiControls->addWidget(new QLabel("Provider:", this));
-    aiControls->addWidget(providerDropdown);
-    aiControls->addWidget(extractAiButton);
-    aiControls->addStretch(1);
-    layout->addLayout(aiControls);
+    configuredAiControls = new QWidget(this);
+    auto *configuredLayout = new QVBoxLayout(configuredAiControls);
+    auto *providerRow = new QHBoxLayout();
+    providerDropdown = new QComboBox(configuredAiControls);
+    extractAiButton = new QPushButton("Extract with AI", configuredAiControls);
+    providerRow->addWidget(new QLabel("Provider:", configuredAiControls));
+    providerRow->addWidget(providerDropdown);
+    providerRow->addWidget(extractAiButton);
+    providerRow->addStretch(1);
 
-    // AI output section
-    auto *aiTitle = new QLabel("AI Output", this);
-    aiTitle->setFont(titleFont);
-
-    aiOutput = new QTextEdit(this);
+    aiOutput = new QTextEdit(configuredAiControls);
     aiOutput->setReadOnly(true);
-    layout->addWidget(aiTitle);
-    layout->addWidget(aiOutput, 1);
 
-    // Status bar
-    statusLabel = new QLabel("Ready", this);
+    statusLabel = new QLabel("Ready", configuredAiControls);
     statusLabel->setStyleSheet("color: gray;");
-    layout->addWidget(statusLabel);
+
+    configuredLayout->addLayout(providerRow);
+    configuredLayout->addWidget(aiOutput, 1);
+    configuredLayout->addWidget(statusLabel);
+
+    setupAiControls = new QWidget(this);
+    auto *setupLayout = new QVBoxLayout(setupAiControls);
+    auto *setupInfo = new QLabel("No AI provider is configured yet. Choose one setup path below.", setupAiControls);
+    setupInfo->setWordWrap(true);
+    auto *setupButtons = new QHBoxLayout();
+    setupOllamaButton = new QPushButton("Setup Ollama", setupAiControls);
+    setupGeminiButton = new QPushButton("Setup Gemini", setupAiControls);
+    setupButtons->addWidget(setupOllamaButton);
+    setupButtons->addWidget(setupGeminiButton);
+    setupButtons->addStretch(1);
+    setupLayout->addWidget(setupInfo);
+    setupLayout->addLayout(setupButtons);
+    setupLayout->addStretch(1);
+
+    aiControlsStack->addWidget(configuredAiControls);
+    aiControlsStack->addWidget(setupAiControls);
+    layout->addWidget(aiControlsStack);
 
     // Load default provider
-    QString defaultProvider = QString::fromStdString(settings.getDefaultAiProvider());
-    int index = providerDropdown->findData(defaultProvider);
-    if (index >= 0) {
-        providerDropdown->setCurrentIndex(index);
-    }
+    rebuildProviderDropdown();
 
     // Connect signals
     connect(backButton, &QPushButton::clicked, this, [this]() {
@@ -103,9 +122,56 @@ void ResultPage::buildUi() {
         runAiExtraction();
     });
 
+    connect(setupOllamaButton, &QPushButton::clicked, this, [this]() {
+        emit ollamaSetupRequested();
+    });
+
+    connect(setupGeminiButton, &QPushButton::clicked, this, [this]() {
+        emit geminiSetupRequested();
+    });
+
     connect(settingsButton, &QToolButton::clicked, this, [this]() {
         emit settingsRequested();
     });
+
+    refreshAiSection();
+}
+
+void ResultPage::rebuildProviderDropdown() {
+    const QString currentProvider = providerDropdown ? providerDropdown->currentData().toString() : QString();
+    providerDropdown->clear();
+
+    if (settings.getOllamaConfigured()) {
+        providerDropdown->addItem("Ollama", "ollama");
+    }
+
+    if (settings.getGeminiConfigured()) {
+        providerDropdown->addItem("Gemini", "gemini");
+    }
+
+    if (providerDropdown->count() == 0) {
+        return;
+    }
+
+    QString defaultProvider = QString::fromStdString(settings.getDefaultAiProvider());
+    int index = providerDropdown->findData(defaultProvider);
+    if (index < 0 && !currentProvider.isEmpty()) {
+        index = providerDropdown->findData(currentProvider);
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    providerDropdown->setCurrentIndex(index);
+}
+
+void ResultPage::updateAiSectionVisibility() {
+    const bool anyProviderConfigured = settings.getAnyProviderConfigured();
+    aiControlsStack->setCurrentIndex(anyProviderConfigured ? 0 : 1);
+    configuredAiControls->setVisible(anyProviderConfigured);
+    setupAiControls->setVisible(!anyProviderConfigured);
+    if (extractAiButton) {
+        extractAiButton->setEnabled(anyProviderConfigured);
+    }
 }
 
 void ResultPage::setImagePath(const QString &imagePath) {
@@ -141,6 +207,11 @@ void ResultPage::runOcr() {
 void ResultPage::runAiExtraction() {
     if (!hasValidImage()) {
         QMessageBox::warning(this, "Invalid image", "Please provide a valid image path.");
+        return;
+    }
+
+    if (!settings.getAnyProviderConfigured()) {
+        QMessageBox::information(this, "No provider configured", "Set up an AI provider before extracting text with AI.");
         return;
     }
 

@@ -2,6 +2,7 @@
 
 #include <QLineEdit>
 #include <QPushButton>
+#include <QToolButton>
 #include <QWidget>
 
 class HomePage : public QWidget {
@@ -18,4 +19,5 @@ private:
     void buildUi();
 
     QLineEdit *imagePathInput;
+    QToolButton *settingsButton;
 };

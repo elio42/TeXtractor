@@ -2,7 +2,6 @@
 
 - save only the settings that are in use.
 - hover on the settings cog.
-- max width for settings boxes
 - language dropdown with "other" option
 - gemeni test button (figure out what the response would be if the model is deprecated.)
 - Onboarding on homepage with some explanations (maybe whole readme?)

@@ -1,10 +1,16 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.15)
 
-project(TeXtractor VERSION 0.1.0 LANGUAGES CXX)
+project(TeXtractor LANGUAGES CXX)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
+
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+
+add_executable(TeXtractor ${SOURCES})
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(TESSERACT REQUIRED tesseract)
@@ -12,32 +18,11 @@ pkg_check_modules(LEPT REQUIRED lept)
 find_package(CURL REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Widgets Concurrent)
 
-set(TEXTRACTOR_SOURCES
-    src/core/main.cpp
-    src/gui/main_window.cpp
-    src/gui/main_pages/home_page.cpp
-    src/gui/main_pages/result_page.cpp
-    src/gui/main_pages/settings_page.cpp
-    src/core/settings.cpp
-    src/core/open_terminal.cpp
-    src/ocr/ocr.cpp
-    src/ai-recognition/ai_client.cpp
-    src/ai-recognition/gemini_client.cpp
-    src/ai-recognition/ollama_client.cpp
-    src/include/base64.cpp
-)
-
-add_executable(TeXtractor ${TEXTRACTOR_SOURCES})
-
 target_include_directories(TeXtractor PRIVATE
-    src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${TESSERACT_INCLUDE_DIRS}
     ${LEPT_INCLUDE_DIRS}
-)
-
-target_compile_options(TeXtractor PRIVATE
-    ${TESSERACT_CFLAGS_OTHER}
-    ${LEPT_CFLAGS_OTHER}
 )
 
 target_link_libraries(TeXtractor PRIVATE

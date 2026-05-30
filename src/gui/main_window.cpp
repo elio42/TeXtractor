@@ -1,13 +1,16 @@
 #include "main_window.h"
 
 #include <QFileInfo>
+#include <QDialog>
 #include <QMessageBox>
 #include <QVBoxLayout>
 
 MainWindow::MainWindow(const QString &startupImagePath, QWidget *parent)
-    : QWidget(parent), settings(true), pages(nullptr), homePage(nullptr), resultPage(nullptr), settingsPage(nullptr) {
+        : QWidget(parent), settings(true), pages(nullptr), homePage(nullptr), resultPage(nullptr), settingsPage(nullptr),
+            ollamaWizardPage(nullptr) {
     buildUi();
     connectSignals();
+    refreshUiState();
 
     if (!startupImagePath.isEmpty() && QFileInfo(startupImagePath).exists()) {
         resultPage->setImagePath(startupImagePath);
@@ -29,14 +32,20 @@ void MainWindow::buildUi() {
     homePage = new HomePage(this);
     resultPage = new ResultPage(settings, this);
     settingsPage = new SettingsPage(settings, this);
+    ollamaWizardPage = new OllamaWizardPage(settings, this);
 
     pages->addWidget(homePage);
     pages->addWidget(resultPage);
     pages->addWidget(settingsPage);
+    pages->addWidget(ollamaWizardPage);
 
     auto *root = new QVBoxLayout(this);
     root->addWidget(pages);
     setLayout(root);
+}
+
+void MainWindow::refreshUiState() {
+    resultPage->refreshAiSection();
 }
 
 void MainWindow::connectSignals() {
@@ -67,8 +76,49 @@ void MainWindow::connectSignals() {
         pages->setCurrentWidget(settingsPage);
     });
 
+    connect(resultPage, &ResultPage::ollamaSetupRequested, this, [this]() {
+        ollamaWizardPage->refreshFromSettings();
+        pages->setCurrentWidget(ollamaWizardPage);
+    });
+
+    connect(resultPage, &ResultPage::geminiSetupRequested, this, [this]() {
+        GeminiSetupDialog dialog(settings, this);
+        if (dialog.exec() == QDialog::Accepted) {
+            settings.updateSettings();
+            refreshUiState();
+        }
+    });
+
     // Settings page signals
     connect(settingsPage, &SettingsPage::backRequested, this, [this]() {
+        pages->setCurrentWidget(homePage);
+    });
+
+    connect(settingsPage, &SettingsPage::settingsChanged, this, [this]() {
+        settings.updateSettings();
+        refreshUiState();
+    });
+
+    connect(settingsPage, &SettingsPage::ollamaSetupRequested, this, [this]() {
+        ollamaWizardPage->refreshFromSettings();
+        pages->setCurrentWidget(ollamaWizardPage);
+    });
+
+    connect(settingsPage, &SettingsPage::geminiSetupRequested, this, [this]() {
+        GeminiSetupDialog dialog(settings, this);
+        if (dialog.exec() == QDialog::Accepted) {
+            settings.updateSettings();
+            refreshUiState();
+        }
+    });
+
+    connect(ollamaWizardPage, &OllamaWizardPage::finished, this, [this]() {
+        settings.updateSettings();
+        refreshUiState();
+        pages->setCurrentWidget(resultPage);
+    });
+
+    connect(ollamaWizardPage, &OllamaWizardPage::cancelled, this, [this]() {
         pages->setCurrentWidget(homePage);
     });
 }

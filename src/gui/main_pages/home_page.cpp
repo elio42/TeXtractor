@@ -22,7 +22,7 @@ void HomePage::buildUi() {
     titleFont.setBold(true);
     title->setFont(titleFont);
 
-    auto *settingsButton = new QToolButton(this);
+    settingsButton = new QToolButton(this);
     settingsButton->setText("⚙");
     settingsButton->setStyleSheet(
         "QToolButton { font-size: 20px; border: none; }"
