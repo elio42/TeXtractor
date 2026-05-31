@@ -5,6 +5,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QSizePolicy>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -32,7 +33,7 @@ void OllamaWizardPage::buildUi() {
     title->setFont(titleFont);
     layout->addWidget(title);
 
-    auto *subtitle = new QLabel("Follow the three setup steps below to install and configure Ollama.", this);
+    auto *subtitle = new QLabel("Please read the instructions to understand the setup process.", this);
     subtitle->setWordWrap(true);
     layout->addWidget(subtitle);
 
@@ -41,7 +42,7 @@ void OllamaWizardPage::buildUi() {
     auto *installPage = new QWidget(this);
     auto *installLayout = new QVBoxLayout(installPage);
     auto *installInfo = new QLabel(
-        "Placeholder: explain what the official Ollama install script does, what the user should expect, and any platform-specific notes you want to add later.",
+        "1. This setup will guide you through installing Ollama, downloading a model, and configuring the connection settings. \n\n 2. If you have already installed Ollama, you can immediatelly press the continue button. Otherwise first install Ollama.\n\n 3. Pressing the Install button will launch the official Ollama installation script in a terminal. The application cannot check the installation, please hit continue only after the installation is complete.",
         installPage);
     installInfo->setWordWrap(true);
 
@@ -54,15 +55,17 @@ void OllamaWizardPage::buildUi() {
 
     auto *continueRow1 = new QHBoxLayout();
     auto *continueButton1 = new QPushButton("Continue", installPage);
-    auto *continueHint1 = new QLabel("Ollama has been installed or is installed already", installPage);
+    auto *continueHint1 = new QLabel("Click to continue after the installation or if you have already installed Ollama", installPage);
     continueHint1->setWordWrap(true);
     continueRow1->addWidget(continueButton1);
     continueRow1->addWidget(continueHint1, 1);
 
     auto *cancelRow1 = new QHBoxLayout();
     auto *cancelButton1 = new QPushButton("Cancel", installPage);
+    auto *cancelHint1 = new QLabel("Cancel the Ollama setup wizard", installPage);
+    cancelHint1->setWordWrap(true);
     cancelRow1->addWidget(cancelButton1);
-    cancelRow1->addStretch(1);
+    cancelRow1->addWidget(cancelHint1, 1);
 
     installLayout->addWidget(installInfo);
     installLayout->addSpacing(16);
@@ -83,14 +86,14 @@ void OllamaWizardPage::buildUi() {
 
     auto *modelRow = new QHBoxLayout();
     auto *modelInstallButton = new QPushButton("Install Model", modelPage);
-    auto *modelInstallHint = new QLabel("Launch ollama pull in a terminal", modelPage);
+    auto *modelInstallHint = new QLabel("Download the selected model with the 'ollama pull' command in a new terminal. \n\n You can write any valid model name in the input field and click install. Just make sure that it's a vision capable model.", modelPage);
     modelInstallHint->setWordWrap(true);
     modelRow->addWidget(modelInstallButton);
     modelRow->addWidget(modelInstallHint, 1);
 
     auto *continueRow2 = new QHBoxLayout();
     auto *continueButton2 = new QPushButton("Continue", modelPage);
-    auto *continueHint2 = new QLabel("Skip model installation and move to settings", modelPage);
+    auto *continueHint2 = new QLabel("Click to continue once you have all the models you want to install", modelPage);
     continueHint2->setWordWrap(true);
     continueRow2->addWidget(continueButton2);
     continueRow2->addWidget(continueHint2, 1);
@@ -122,6 +125,15 @@ void OllamaWizardPage::buildUi() {
     form->addRow("Port:", ollamaPortInput);
     form->addRow("Model:", ollamaModelInput);
     form->addRow("Keep Alive (seconds):", ollamaKeepAliveInput);
+
+    auto *keepAliveInfo = new QLabel(
+        "Ollama needs to load the model into memory every time it receives a request - this takes some time. If you often send requests to Ollama in a short interval, it might be worth setting a keep alive to a time where the model doesn't get unloaded from memory between requests. Just keep in mind that the model will consume memory for the time that it is loaded in ram. \n\n Setting it to 0 means that the model gets unloaded immediately after each request, which is the recommended setting for most users.",
+        formBox);
+    keepAliveInfo->setWordWrap(true);
+    keepAliveInfo->setStyleSheet("color: gray;");
+    keepAliveInfo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    form->addRow("", keepAliveInfo);
 
     auto *saveRow = new QHBoxLayout();
     auto *backButton3 = new QPushButton("Back", settingsPage);
