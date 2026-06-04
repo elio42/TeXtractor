@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=TeXtractor
+Exec=textractor %f
+Icon=textractor
+Categories=Graphics;Utility;
+MimeType=image/png;image/jpeg;
+StartupNotify=true

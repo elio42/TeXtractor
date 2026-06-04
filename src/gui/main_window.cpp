@@ -22,7 +22,7 @@ MainWindow::MainWindow(const QString &startupImagePath, QWidget *parent)
 }
 
 void MainWindow::buildUi() {
-    setWindowTitle("TeXtractor");
+    setWindowTitle(QString("TeXtractor v%1").arg(TEXTRACTOR_VERSION));
     resize(980, 680);
     setMinimumSize(375, 250);
 
