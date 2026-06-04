@@ -18,22 +18,6 @@ OllamaClient::OllamaClient(Settings &settings){
     this->keep_alive = settings.getOllamaKeepAlive();
 }
 
-std::string OllamaClient::buildRequestBody(const std::string &base64_image){
-    json request;
-    request["model"] = this->model;
-    request["stream"] = false;
-    request["keep_alive"] = this->keep_alive;
-
-    json message;
-    message["role"] = "user";
-    message["images"] = { base64_image };
-    message["content"] = Prompts::default_simple_prompt; //TODO: pass a value for this.
-
-    request["messages"] = { message };
-
-    return request.dump();
-}
-
 std::string OllamaClient::sendRequest(const std::string &body){
     CURL *curl;
     CURLcode res;
@@ -92,10 +76,26 @@ std::string OllamaClient::parseResponse(const std::string &response){
     }
 }
 
-std::string OllamaClient::textract(const std::string &file_path){
+std::string OllamaClient::buildRequestBody(const std::string &base64_image, const std::string &prompt){
+    json request;
+    request["model"] = this->model;
+    request["stream"] = false;
+    request["keep_alive"] = this->keep_alive;
+
+    json message;
+    message["role"] = "user";
+    message["images"] = { base64_image };
+    message["content"] = prompt.empty() ? Prompts::default_simple_prompt : prompt;
+
+    request["messages"] = { message };
+
+    return request.dump();
+}
+
+std::string OllamaClient::textract(const std::string &file_path, const std::string &prompt){
     try{
         std::string base64_image = getBase64Image(file_path);
-        std::string request_body = buildRequestBody(base64_image);
+        std::string request_body = buildRequestBody(base64_image, prompt);
         std::string response = sendRequest(request_body);
         return parseResponse(response);
     }

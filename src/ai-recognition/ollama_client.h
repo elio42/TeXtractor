@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "../core/settings.h"
 #include "ai_client.h"
@@ -12,7 +13,7 @@ private:
     std::string model;
     int keep_alive;
 
-    std::string buildRequestBody(const std::string &base64_image);
+    std::string buildRequestBody(const std::string &base64_image, const std::string &prompt);
 
     std::string sendRequest(const std::string &body);
 
@@ -21,7 +22,7 @@ private:
 public:
     OllamaClient(Settings &settings);
 
-    std::string textract(const std::string &file_path);
+    std::string textract(const std::string &file_path, const std::string &prompt = "");
 
     bool isOnline();
 

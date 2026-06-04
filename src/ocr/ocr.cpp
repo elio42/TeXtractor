@@ -1,28 +1,40 @@
 #include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
+#include <stdexcept>
+
 #include "../core/settings.h"
 
-std::string getOCR(std::string &path){
-    char *outText;
+std::string getOCR(const std::string &path){
+    char *outText = nullptr;
     Settings settings;
 
     tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
-    // Initialize tesseract-ocr with English, without specifying tessdata path
     if (api->Init(NULL, settings.getOCRLanguage().c_str())) {
-        fprintf(stderr, "Could not initialize tesseract.\n");
-        exit(1);
+        delete api;
+        throw std::runtime_error("Could not initialize tesseract.");
     }
 
-    // Open input image with leptonica library
     Pix *image = pixRead(path.c_str());
-    api->SetImage(image);
-    // Get OCR result
-    outText = api->GetUTF8Text();
-    //printf("OCR output:\n%s", outText);
+    if (!image) {
+        api->End();
+        delete api;
+        throw std::runtime_error("Could not open image for OCR.");
+    }
 
-    // Destroy used object and release memory
+    api->SetImage(image);
+    outText = api->GetUTF8Text();
+    if (!outText) {
+        api->End();
+        delete api;
+        pixDestroy(&image);
+        throw std::runtime_error("Tesseract returned empty OCR buffer.");
+    }
+
+    std::string result = outText;
+    delete[] outText;
+
     api->End();
     delete api;
     pixDestroy(&image);
-    return outText;
+    return result;
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <../core/settings.h>
+#include "../core/settings.h"
 #include "ai_client.h"
 #include "../core/settings.h"
 

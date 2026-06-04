@@ -1,3 +1,3 @@
 #pragma once
 
-std::string getOCR(std::string &path);
+std::string getOCR(const std::string &path);
