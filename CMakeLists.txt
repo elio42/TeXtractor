@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(TeXtractor VERSION 0.1.0 LANGUAGES CXX)
+project(TeXtractor VERSION 0.1.1 LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -36,8 +36,18 @@ target_link_libraries(TeXtractor PRIVATE
     ${LEPT_LIBRARIES}
 )
 
+set(PACKAGE_NAME "textractor")
+
 # Install the application and its resources
 include(GNUInstallDirs)
 install(TARGETS TeXtractor DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES textractor.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
 install(FILES textractor.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps)
+install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PACKAGE_NAME})
+
+set(CPACK_GENERATOR "DEB;RPM")
+set(CPACK_PACKAGE_NAME "${PACKAGE_NAME}")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "eliokuster.essay132@passmail.com")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+include(CPack)

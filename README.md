@@ -1,10 +1,10 @@
 # TeXtractor
 
-TeXtractor is a Linux desktop application to extract **any** text from an image. TeXtractor uses both traditional OCR and multi modal AI models for text and LaTeX formula extraction. You can use both online models and local models with ollama.
+TeXtractor is a Linux desktop application to extract **any** text from an image. TeXtractor uses both traditional OCR and (optionally) multi-modal AI models for text and LaTeX formula extraction. You can use both online models and local models using ollama.
 
-On the surface, TeXtractor is an application that can be opened with an image and it will extract the text for you. The real intention however, is for TeXtractor to be used with your screenshot tool. Some screenshot applications like KDE Spectacle have an `export` button that you can use to open TeXtractor with the just taken screenshot.
+On the surface, TeXtractor is an application that can be opened with an image and it will extract the text for you. The real intention however, is for TeXtractor to be used with your screenshot tool. Some screenshot applications like KDE Spectacle have an `export` button that you can use to open the just taken screenshot in an external application like TeXtractor.
 
-This way you get the best of both worlds. Neither a tool that pops up on every screenshot and is generally in the way like "spectacle-ocr-screenshot". But you only need two clicks to actually get your OCR result if you _DO_ want to extract text from a screenshot.
+This way you get the best of both worlds. Neither a tool that pops up on every screenshot which might be in the way like "spectacle-ocr-screenshot" (because it opens on every screenshot). But you only need two clicks to actually get your OCR result if you _DO_ want to extract text from a screenshot. Furthermore,  it's a simple and straightforward application if you ever need to extract text from any other image.
 
 ## Usage
 
@@ -19,7 +19,7 @@ Examples:
 ./build/TeXtractor /path/to/image.png
 ```
 
-Or, of course use the "export" button in your screenshot tool to launch TeXtractor.
+Or, of course, use the "export" button in your screenshot tool to launch TeXtractor.
 
 ### Model selection
 
@@ -29,11 +29,11 @@ Any multimodal AI model can be used. Here is a selection of models that I tested
 
 Pro:
 - This performs by far the best and the fastest.
-- Google offers a generous free-tier for their API.
+- Google's free-tier is usually plenty for this use case here.
   - (Rate limits of 5 requests/minute but no monthly limits.) (January 2026)
 
 Cons:
-- Google uses your images for training.
+- Google uses your images for training when using the free tier.
 
 #### Ollama - gemma4:e4b
 
@@ -42,8 +42,8 @@ Pro:
 - Runs on my 6-year old laptop with a gtx 1650ti
 
 Cons:
-- Takes longer, especially on older devices
-- May not be suitable if you don't have a dedicated GPU (though I didn't do any testing so it may also work)
+- Takes longer on older devices and **especially** with large images.
+- May not be suitable if you don't have a dedicated GPU (though I didn't do any testing without a dedicated GPU so your experience may vary)
 
 ## Building and Install
 
@@ -68,7 +68,7 @@ cmake --build build --parallel
 ./build/TeXtractor
 ```
 
-### Install with cmake - only for development purposes
+### Install with cmake - mostly for testing purposes
 
 ```bash
 sudo cmake --install build
