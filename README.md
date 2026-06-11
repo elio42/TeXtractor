@@ -47,6 +47,23 @@ Cons:
 
 ## Building and Install
 
+### Installation
+
+**Arch Linux**
+
+Install from the AUR using your favorite AUR helper.
+- `paru -S textractor`
+
+**Debian/Ubuntu**
+
+Download the `.deb` package from the [releases page](https://github.com/elio42/TeXtractor/releases) and install it.
+
+**Fedora**
+
+Download the `.rpm` package from the [releases page](https://github.com/elio42/TeXtractor/releases) and install it.
+
+### Build from source and publish
+
 Build dependencies (Linux):
 
 - C++ compiler with C++17 support
@@ -68,17 +85,27 @@ cmake --build build --parallel
 ./build/TeXtractor
 ```
 
-### Install with cmake - mostly for testing purposes
+#### Install with cmake - mostly for testing purposes
 
 ```bash
 sudo cmake --install build
 ```
 
+**Uninstalling** needs to be done manually when installed with cmake:
+
 ```bash
 cd build
 sudo xargs rm < install_manifest.txt
-# or in case the manifest is gone check here:
+# or in case the manifest is gone, check here:
 sudo rm /usr/bin/textractor
 sudo rm /usr/share/applications/textractor.desktop
 sudo rm /usr/share/icons/hicolor/256x256/apps/textractor.png
 ```
+
+#### Steps for publishing - Reminder to me
+
+- Update the version in `CMakeLists.txt` AND `PKGIBUILD`
+- Create github release
+  - create package with `cpack` after building from the build directory
+- `updpkgsums`
+- `makepkg --printsrcinfo > .SRCINFO`
